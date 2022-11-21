@@ -1,0 +1,270 @@
+PROJECT RESTAURANT ORDER MANAGEMENT SYSTEM
+
+schema
+In the project, we are using 
+
+menu
+user
+order
+payment
+
+
+menu
+>>item_id  (Primary key)
+>>item_name
+>>item_price
+
+
+user
+>>user_id (primary key)
+>>user_name
+>>phone_number
+>>e-mail
+
+order
+>>order_id (primary key)
+>>status
+>>order_Date
+
+
+payment
+>>payment_id (primary key)
+>>total_amount
+>>payment_method
+>>payment_date
+
+
+final draft
+
+user
+>>user_id (primary key)
+>>user_name
+>>phone_number
+>>e-mail
+
+payment
+>>payment_id (primary key)
+>>total_amount
+>>payment_method
+>>payment_date
+user_id  (foreign key)
+order_id (foreign key)
+
+order
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PROJECT RESTAURANT ORDER MANAGEMENT SYSTEM ( THE DOSA PLAZA )
+
+DATA BASE DESIGN
+
+Entities
+
+PRODUCT
+CUSTOMER
+EMPLOYEE
+ORDER
+ORDERTRASACTION
+PAYMENT
+
+
+ATTRIBUTES IN  ENTITIES
+
+PRODUCT
+
+Product_id (primary key)
+Product_name
+Price
+Product_description
+
+
+CUSTOMER
+
+User_id
+Name
+Gender
+Contact Number
+E-mail
+Address
+
+EMPLOYEE
+
+Emp_id
+Name
+Designation
+Gender
+DOB
+
+ORDER_DETAILS
+
+Order_id
+Order_date
+Delvry_date
+Emp_id         (Foreign Key)
+Cust_id        (Foreign Key)
+
+ORDER TRANSACTION
+
+QtyOR
+Order_id        (Foreign Key)
+Product_id      (Foreign Key)
+
+
+PAYMENT
+
+Pay_id
+Pay_Method
+Amount
+Order_id        (Foreign Key)
+Pay_date        (Foreign Key)
+
+---------------------------------------------------------------
+
+
+SCHEMA 
+
+CREATE TABLE CUSTOMER
+(
+CUS_ID varchar(25) constraint CUS_PK PRIMARY KEY,
+CUS_NAME VARCHAR2(20),
+CNT_NO NUMBER(11),
+GENDER VARCHAR2(15),
+ADDRESS VARCHAR2(15)
+);
+
+
+CREATE TABLE EMPLOYEE
+(
+EMP_ID VARCHAR(25) constraint EMP_PK PRIMARY KEY,
+EMP_NAME VARCHAR2(25),
+DESIGNATION  VARCHAR2(25),
+GENDER VARCHAR2(15),
+DOB DATE
+);
+
+
+CREATE TABLE ORDER_DETAILS 
+(
+O_ID NUMBER(5) PRIMARY KEY,
+O_DATE DATE,
+DELVRY_DATE DATE,
+EMP_ID NUMBER(15),
+CUS_ID NUMBER(15)
+);
+
+
+CREATE TABLE PRODUCT
+(
+P_ID NUMBER(10) PRIMARY KEY,
+P_NAME VARCHAR2(25),
+PRICE NUMBER(20),
+P_DESC VARCHAR2(25)
+);
+
+
+CREATE TABLE ORDER_TRANCATION(
+O_ID INT,
+P_ID VARCHAR(225),
+ORDER_QTY NUMBER(3) 
+);
+
+
+CREATE TABLE PAYMENT
+(
+PAY_ID NUMBER(8),
+PAY_METHOD VARCHAR(15),
+AMOUNT NUMBER(3),
+O_ID NUMBER(5),
+PAY_DATE DATE
+);
+
+
+
+---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
+INSERT INTO ORDER_DETAILS VALUES(001, '14-AUG-2022', '14-AUG-2022', 22, 12 );
+INSERT INTO ORDER_DETAILS VALUES(002, '14-AUG-2022', '14-AUG-2022', 21, 11 );
+INSERT INTO ORDER_DETAILS VALUES(003, '15-AUG-2022', '15-AUG-2022', 23, 15 );
+INSERT INTO ORDER_DETAILS VALUES(004, '15-AUG-2022', '15-AUG-2022', 23, 11 );
+INSERT INTO ORDER_DETAILS VALUES(005, '16-AUG-2022', '16-AUG-2022', 25, 15 );
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+/*Main Code Using Plsql*/
+
+
+DECLARE
+v_cus_ID CUSTOMER.CUS_ID%type;
+v_BUY_PRODUCT_ID PRODUCT.P_ID%type;
+v_ORDER_PRICE PRODUCT.PRICE%type;
+v_ORDER_PAYMENT NUMBER;
+v_name product.p_name%type;
+v_price product.price%type;
+invalid_product_ex exception;
+invalid_cus_ex exception;
+
+BEGIN
+/*Initialize variables start*/
+v_cus_ID := null;
+v_BUY_PRODUCT_ID:= null;
+v_ORDER_PRICE := 0;
+v_ORDER_PAYMENT := 0;
+v_name := null;
+v_price := 0;
+/*Initialize variables End*/
+
+--Receive and validate customer number
+begin
+    v_cus_ID := :Enter_cus_ID;
+
+    SELECT cus_id, cus_name
+    into v_cus_id, V_NAME
+    FROM customer
+    WHERE cus_ID = v_cus_ID;
+
+EXCEPTION
+when others THEN
+    dbms_output.put_line('Invalid Customer Id is Entered!!!');
+    raise invalid_cus_ex;
+end;
+
+--receive and validate product
+begin
+v_BUY_PRODUCT_ID:= :Enter_the_P_ID_you_want_buy;
+
+    SELECT p_name, price
+    into v_name, v_price
+    FROM PRODUCT
+    WHERE P_ID = v_BUY_PRODUCT_ID;
+
+EXCEPTION
+when no_data_found THEN
+    dbms_output.put_line('Invalid Product id Entered!!!');
+    raise invalid_product_ex;
+end;
+
+IF v_name is not null THEN
+
+  v_ORDER_PAYMENT:= :ENTER_THE_PAYMENT_AMOUNT;
+  IF(v_ORDER_PAYMENT=v_PRICE) then
+    dbms_output.put_line('Rs. '||v_ORDER_PAYMENT||' has been debited in your account');
+    dbms_output.put_line('YOUR ORDER IS SUCESSFULL');
+    dbms_output.put_line('YOUR ORDER_ID: '||to_char(sysdate, 'YYYYMMDDHH24MISS'));
+  ELSE
+    dbms_output.put_line('PAYMENT FAIL');
+  end if;
+
+ELSE
+  dbms_output.put_line('ENTER CORRECT P_ID');
+end if;
+
+exception
+when invalid_cus_ex THEN 
+dbms_output.put_line('Error: In Customer Validation. Error: '||SQLERRM);
+
+when invalid_product_ex THEN 
+dbms_output.put_line('Error: In product Validation. Error: '||SQLERRM);
+
+when OTHERS THEN 
+dbms_output.put_line('Error: In order Entry. Error: '||SQLERRM);
+
+END;
+/
